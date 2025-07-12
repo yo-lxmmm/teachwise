@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeachWise - AI Teaching Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: #fff;
+            border-bottom: 3px solid #ffd700;
+            padding: 20px 30px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 5px;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1em;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Setup Section (Full Width) */
+        .setup-section {
+            width: 100%;
+            padding: 40px;
+            background: #fafafa;
+            overflow-y: auto;
+        }
+
+        .setup-card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+        }
+
+        .setup-section h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            background: #fff;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Question Generation Section */
+        .question-section {
+            width: 100%;
+            padding: 40px;
+            background: #fafafa;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .question-card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+        }
+
+        .question-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .question-option {
+            padding: 25px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+            text-align: center;
+            position: relative;
+        }
+
+        .question-option:hover {
+            border-color: #ffd700;
+            background: #fffbf0;
+            transform: translateY(-2px);
+        }
+
+        .question-option.selected {
+            border-color: #ffd700;
+            background: #fffbf0;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+        }
+
+        .question-option.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .question-option h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .question-option p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .question-input-area {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .question-input-area.active {
+            display: block;
+        }
+
+        .generated-question-display {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .generated-question-display.active {
+            display: block;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .question-edit-area {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .question-edit-area.active {
+            display: block;
+        }
+
+        .question-edit-area textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 14px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        /* Split Screen Layout */
+        .split-container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        .chat-panel {
+            flex: 1;
+            background: #fff;
+            border-right: 1px solid #e1e5e9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .workspace-panel {
+            flex: 1;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Chat Interface */
+        .chat-header {
+            padding: 20px;
+            background: #fff;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ffd700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .student-info h3 {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .student-info p {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fff;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.teacher {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.student {
+            margin-right: auto;
+        }
+
+        .message.system {
+            margin: 0 auto;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .message-content {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95em;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message.teacher .message-content {
+            background: #ffd700;
+            color: #333;
+        }
+
+        .message.student .message-content {
+            background: #f1f3f4;
+            color: #333;
+        }
+
+        .message.system .message-content {
+            background: #fffbf0;
+            border: 1px solid #ffd700;
+            color: #333;
+        }
+
+        .message-sender {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .message-thinking {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .thinking-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .thinking-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #ffd700;
+            animation: thinkingPulse 1.5s infinite;
+        }
+
+        .thinking-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .thinking-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes thinkingPulse {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: #fff;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            max-height: 120px;
+        }
+
+        .chat-input-area input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .chat-input-area input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Workspace Panel */
+        .workspace-header {
+            padding: 20px;
+            background: #fff;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .workspace-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .workspace-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #e1e5e9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .workspace-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .workspace-card.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .workspace-card.required {
+            border-color: #ffd700;
+            background: #fffbf0;
+        }
+
+        .workspace-card.completed {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        /* Strategy Cards */
+        .strategy-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .strategy-card {
+            background: #fff;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .strategy-card:hover {
+            border-color: #ffd700;
+            background: #fffbf0;
+            transform: translateY(-1px);
+        }
+
+        .strategy-card.active {
+            border-color: #ffd700;
+            background: #fffbf0;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+        }
+
+        .strategy-card h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .strategy-card p {
+            color: #666;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        /* Evidence Log */
+        .evidence-log {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .evidence-item {
+            padding: 8px 12px;
+            background: #fff;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            border-left: 3px solid #ffd700;
+        }
+
+        .evidence-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .evidence-round {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .evidence-text {
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: #ffd700;
+            color: #333;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background: #ffed4e;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #ffd700;
+            color: #333;
+        }
+
+        .btn-outline:hover {
+            background: #ffd700;
+        }
+
+        /* Misconception Options */
+        .misconception-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .misconception-option {
+            padding: 16px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fff;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .misconception-option:hover {
+            border-color: #ffd700;
+            background: #fffbf0;
+        }
+
+        .misconception-option.selected {
+            border-color: #ffd700;
+            background: #fffbf0;
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+        }
+
+        .continue-practice-area {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .continue-practice-area h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .continue-practice-area p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #f0f0f0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            transition: width 0.3s ease;
+        }
+
+        /* Persona Section */
+        .persona-section {
+            background: #fff;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .persona-header {
+            padding: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .persona-header:hover {
+            background: #f8f9fa;
+        }
+
+        .persona-header h3 {
+            color: #333;
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .persona-subtitle {
+            color: #666;
+            font-size: 0.9em;
+            margin: 5px 0 0 0;
+            font-weight: 400;
+        }
+
+        .persona-controls {
+            padding: 20px;
+            display: block;
+        }
+
+        .persona-controls.collapsed {
+            display: none;
+        }
+
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .persona-item {
+            background: #f8f9fa;
+            padding: 16px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+        }
+
+        .persona-item label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .persona-item input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #e1e5e9;
+            outline: none;
+            -webkit-appearance: none;
+            margin-bottom: 8px;
+        }
+
+        .persona-item input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ffd700;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .persona-item input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ffd700;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .persona-item small {
+            color: #666;
+            font-size: 0.8em;
+            line-height: 1.3;
+        }
+
+        .persona-presets {
+            border-top: 1px solid #e1e5e9;
+            padding-top: 16px;
+        }
+
+        .persona-presets h4 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .preset-btn {
+            background: #fff;
+            color: #333;
+            border: 1px solid #e1e5e9;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .preset-btn:hover {
+            border-color: #ffd700;
+            background: #fffbf0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .split-container {
+                flex-direction: column;
+            }
+            
+            .chat-panel,
+            .workspace-panel {
+                flex: none;
+                height: 50vh;
+            }
+            
+            .question-options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Feedback Section */
+        .feedback-section {
+            width: 100%;
+            padding: 40px;
+            background: #fafafa;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .feedback-card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ffd700;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffed4e;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>TeachWise</h1>
+            <p>AI-Powered Teaching Practice Platform</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Setup Section -->
+            <div id="setup" class="setup-section">
+                <div class="setup-card">
+                    <h2>🎯 Setup Your Teaching Scenario</h2>
+                    
+                    <div class="form-group">
+                        <label for="gradeLevel">Grade Level:</label>
+                        <select id="gradeLevel">
+                            <option value="">Select Grade Level</option>
+                            <option value="elementary">Elementary (K-5)</option>
+                            <option value="middle">Middle School (6-8)</option>
+                            <option value="high">High School (9-12)</option>
+                            <option value="college">College/University</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Subject:</label>
+                        <input type="text" id="subject" placeholder="e.g., Mathematics, Science, English">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="learningOutcomes">Learning Outcomes:</label>
+                        <textarea id="learningOutcomes" placeholder="What should students learn? (e.g., Understand fractions, solve linear equations, analyze literature themes)"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="concepts">Key Concepts:</label>
+                        <textarea id="concepts" placeholder="List the main concepts to cover (e.g., numerator, denominator, equivalent fractions)"></textarea>
+                    </div>
+
+                    <!-- Student Persona Customization -->
+                    <div class="persona-section">
+                        <div class="persona-header" onclick="togglePersonaSection()">
+                            <h3>🎭 Customize Student Persona <span id="personaToggle">▼</span></h3>
+                            <p class="persona-subtitle">Optional: Adjust student characteristics for more realistic practice</p>
+                        </div>
+                        
+                        <div id="personaControls" class="persona-controls">
+                            <div class="persona-grid">
+                                <div class="persona-item">
+                                    <label for="conceptualReadiness">Conceptual Readiness: <span id="conceptualReadinessValue">5</span>/10</label>
+                                    <input type="range" id="conceptualReadiness" min="1" max="10" value="5" oninput="updateSliderValue('conceptualReadiness')">
+                                    <small>Prior knowledge strength</small>
+                                </div>
+
+                                <div class="persona-item">
+                                    <label for="metacognitiveAwareness">Metacognitive Awareness: <span id="metacognitiveAwarenessValue">5</span>/10</label>
+                                    <input type="range" id="metacognitiveAwareness" min="1" max="10" value="5" oninput="updateSliderValue('metacognitiveAwareness')">
+                                    <small>Ability to self-monitor understanding</small>
+                                </div>
+
+                                <div class="persona-item">
+                                    <label for="persistence">Persistence: <span id="persistenceValue">5</span>/10</label>
+                                    <input type="range" id="persistence" min="1" max="10" value="5" oninput="updateSliderValue('persistence')">
+                                    <small>Willingness to work through difficulty</small>
+                                </div>
+
+                                <div class="persona-item">
+                                    <label for="confidenceLevel">Confidence Level: <span id="confidenceLevelValue">5</span>/10</label>
+                                    <input type="range" id="confidenceLevel" min="1" max="10" value="5" oninput="updateSliderValue('confidenceLevel')">
+                                    <small>Willingness to share thinking</small>
+                                </div>
+
+                                <div class="persona-item">
+                                    <label for="communicationStyle">Communication Style:</label>
+                                    <select id="communicationStyle">
+                                        <option value="verbal">Verbal - Prefers explanations</option>
+                                        <option value="visual">Visual - Wants diagrams/pictures</option>
+                                        <option value="hands_on">Hands-on - Likes physical examples</option>
+                                    </select>
+                                    <small>How student prefers to learn</small>
+                                </div>
+                            </div>
+
+                            <div class="persona-presets">
+                                <h4>Quick Presets:</h4>
+                                <button type="button" class="preset-btn" onclick="setPersonaPreset('struggling')">Struggling Student</button>
+                                <button type="button" class="preset-btn" onclick="setPersonaPreset('confident')">Confident Student</button>
+                                <button type="button" class="preset-btn" onclick="setPersonaPreset('visual')">Visual Learner</button>
+                                <button type="button" class="preset-btn" onclick="setPersonaPreset('default')">Reset to Default</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="proceedToQuestionGeneration()">Next: Generate Practice Question</button>
+                </div>
+            </div>
+
+            <!-- Question Generation Section -->
+            <div id="questionGeneration" class="question-section">
+                <div class="question-card">
+                    <h2>📝 Create Practice Question</h2>
+                    <p style="color: #666; margin-bottom: 30px;">Choose how you'd like to create a practice question for your student.</p>
+                    
+                    <div class="question-options">
+                        <div class="question-option" onclick="selectQuestionOption('ai')">
+                            <h3>🤖 AI Generate</h3>
+                            <p>Let AI create a targeted practice question based on your learning outcomes and concepts</p>
+                        </div>
+                        
+                        <div class="question-option" onclick="selectQuestionOption('custom')">
+                            <h3>✏️ Write Your Own</h3>
+                            <p>Create a custom practice question tailored to your teaching style</p>
+                        </div>
+                    </div>
+
+                    <div id="aiQuestionArea" class="question-input-area">
+                        <button class="btn" onclick="generateAIQuestion()">Generate AI Question</button>
+                        
+                        <div id="generatedQuestion" class="generated-question-display">
+                            <h4>Generated Question:</h4>
+                            <div class="question-text" id="questionText"></div>
+                            <div class="question-actions">
+                                <button class="btn-small btn-outline" onclick="editQuestion()">Edit Question</button>
+                                <button class="btn-small btn-secondary" onclick="regenerateQuestion()">Generate Another</button>
+                            </div>
+                            <div id="questionEditArea" class="question-edit-area">
+                                <textarea id="questionEditText" placeholder="Edit your question here..."></textarea>
+                                <div style="margin-top: 10px;">
+                                    <button class="btn-small" onclick="saveEditedQuestion()">Save Changes</button>
+                                    <button class="btn-small btn-secondary" onclick="cancelEdit()">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="customQuestionArea" class="question-input-area">
+                        <div class="form-group">
+                            <label for="customQuestion">Your Practice Question:</label>
+                            <textarea id="customQuestion" placeholder="Enter your practice question here. Make it open-ended to encourage student thinking and reveal misconceptions."></textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button class="btn btn-secondary" onclick="backToSetup()">Back to Setup</button>
+                        <button class="btn" onclick="startSimulation()" id="startSimBtn" disabled>Start Teaching Simulation</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulation Section (Split Screen) -->
+            <div id="simulation" class="split-container" style="display: none;">
+                <!-- Chat Panel -->
+                <div class="chat-panel">
+                    <div class="chat-header">
+                        <div class="student-avatar" id="studentAvatar">S</div>
+                        <div class="student-info">
+                            <h3 id="studentName">Student</h3>
+                            <p id="studentStatus">Ready to learn</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message system">
+                            <div class="message-content">
+                                <strong>🎯 Your Mission:</strong> Ask questions to understand how your student thinks about this problem and identify any misconceptions.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input">
+                        <div class="chat-input-area">
+                            <input type="text" id="teacherInput" placeholder="Ask a question or provide guidance..." onkeypress="handleKeyPress(event)">
+                            <button class="btn" onclick="sendTeacherMessage()" id="sendBtn">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workspace Panel -->
+                <div class="workspace-panel">
+                    <div class="workspace-header">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <h2 style="margin: 0; color: #333; font-size: 1.3em;">Teaching Workspace</h2>
+                    </div>
+                    
+                    <div class="workspace-content">
+                        <!-- Student Profile Card -->
+                        <div class="workspace-card">
+                            <h3>👨‍🎓 Student Profile</h3>
+                            <div id="studentProfile">Loading student profile...</div>
+                        </div>
+
+                        <!-- Evidence Log -->
+                        <div class="workspace-card" id="evidenceCard" style="display: none;">
+                            <h3>📋 Evidence Log</h3>
+                            <div class="evidence-log" id="evidenceLog"></div>
+                        </div>
+
+                        <!-- Instructional Strategy Cards -->
+                        <div class="workspace-card" id="strategyCard">
+                            <h3>🧠 Instructional Strategies</h3>
+                            <p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">Select a strategy to guide your next interaction:</p>
+                            <div class="strategy-cards">
+                                <div class="strategy-card" onclick="selectStrategy('questioning')">
+                                    <h4>🤔 Questioning</h4>
+                                    <p>Use open-ended questions to reveal student thinking and misconceptions</p>
+                                </div>
+                                <div class="strategy-card" onclick="selectStrategy('scaffold')">
+                                    <h4>🏗️ Scaffolding</h4>
+                                    <p>Provide structured support to guide student toward understanding</p>
+                                </div>
+                                <div class="strategy-card" onclick="selectStrategy('analogy')">
+                                    <h4>🔄 Analogies</h4>
+                                    <p>Use familiar comparisons to bridge to new concepts</p>
+                                </div>
+                                <div class="strategy-card" onclick="selectStrategy('examples')">
+                                    <h4>📚 Examples</h4>
+                                    <p>Show concrete examples and counterexamples</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Misconception Analysis -->
+                        <div class="workspace-card required" id="misconceptionCard" style="display: none;">
+                            <h3>🔍 Misconception Analysis</h3>
+                            <p style="color: #666; margin-bottom: 15px;">Based on the conversation, what misconception do you think this student has?</p>
+                            <div class="misconception-options" id="misconceptionOptions">
+                                <!-- Dynamic options will be populated -->
+                            </div>
+                        </div>
+
+                        <!-- Intervention Strategy -->
+                        <div class="workspace-card required" id="interventionCard" style="display: none;">
+                            <h3>💡 Intervention Strategy</h3>
+                            <div class="form-group">
+                                <label for="intervention">How would you help this student overcome their misconception?</label>
+                                <textarea id="intervention" placeholder="Describe your intervention strategy..."></textarea>
+                            </div>
+                            
+                            <div class="continue-practice-area">
+                                <h4>Continue Practice or Submit?</h4>
+                                <p>You can continue practicing with more rounds or submit your final diagnosis.</p>
+                                <div style="display: flex; gap: 10px; justify-content: center;">
+                                    <button class="btn" onclick="continueWithIntervention()">Continue Practice</button>
+                                    <button class="btn btn-secondary" onclick="submitDiagnosis()">Submit Diagnosis</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Section -->
+            <div id="feedback" class="feedback-section">
+                <div class="feedback-card">
+                    <h2>📊 Session Feedback</h2>
+                    <div id="feedbackContent"></div>
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button class="btn" onclick="nextScenario()">🎯 Next Scenario</button>
+                        <button class="btn btn-secondary" onclick="resetSession()">🔄 New Session</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentScenario = null;
+        let chatHistory = [];
+        let currentQuestion = null;
+        let selectedStrategy = null;
+        let evidenceLog = [];
+        let currentRound = 1;
+        let sessionData = {
+            sessions: [],
+            totalSessions: 0,
+            correctDiagnoses: 0,
+            totalScore: 0
+        };
+
+        // Load session data from localStorage
+        function loadSessionData() {
+            const saved = localStorage.getItem('teachwise-session-data');
+            if (saved) {
+                sessionData = JSON.parse(saved);
+                updateStats();
+            }
+        }
+
+        // Save session data to localStorage
+        function saveSessionData() {
+            localStorage.setItem('teachwise-session-data', JSON.stringify(sessionData));
+        }
+
+        // Update stats display
+        function updateStats() {
+            const statsElements = document.querySelectorAll('.stat-card .value');
+            if (statsElements.length >= 3) {
+                statsElements[0].textContent = sessionData.totalSessions;
+                const accuracy = sessionData.totalSessions > 0 ? Math.round((sessionData.correctDiagnoses / sessionData.totalSessions) * 100) : 0;
+                statsElements[1].textContent = accuracy + '%';
+                const avgScore = sessionData.totalSessions > 0 ? Math.round(sessionData.totalScore / sessionData.totalSessions) : 0;
+                statsElements[2].textContent = avgScore;
+            }
+        }
+
+        // Navigation functions
+        function proceedToQuestionGeneration() {
+            const gradeLevel = document.getElementById('gradeLevel').value;
+            const subject = document.getElementById('subject').value;
+            const learningOutcomes = document.getElementById('learningOutcomes').value;
+            const concepts = document.getElementById('concepts').value;
+
+            if (!gradeLevel || !subject || !learningOutcomes || !concepts) {
+                alert('Please fill in all fields to continue.');
+                return;
+            }
+
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('questionGeneration').style.display = 'block';
+        }
+
+        function backToSetup() {
+            document.getElementById('questionGeneration').style.display = 'none';
+            document.getElementById('setup').style.display = 'block';
+        }
+
+        // Question generation functions
+        function selectQuestionOption(option) {
+            // Remove previous selections
+            document.querySelectorAll('.question-option').forEach(el => el.classList.remove('selected'));
+            
+            // Hide all question areas
+            document.querySelectorAll('.question-input-area').forEach(el => el.classList.remove('active'));
+            
+            // Show selected option
+            if (option === 'ai') {
+                document.querySelector('.question-option').classList.add('selected');
+                document.getElementById('aiQuestionArea').classList.add('active');
+            } else {
+                document.querySelectorAll('.question-option')[1].classList.add('selected');
+                document.getElementById('customQuestionArea').classList.add('active');
+            }
+            
+            // Enable start button
+            document.getElementById('startSimBtn').disabled = false;
+        }
+
+        async function generateAIQuestion() {
+            const gradeLevel = document.getElementById('gradeLevel').value;
+            const subject = document.getElementById('subject').value;
+            const learningOutcomes = document.getElementById('learningOutcomes').value;
+            const concepts = document.getElementById('concepts').value;
+
+            // Show loading state
+            const aiOption = document.querySelector('.question-option');
+            aiOption.classList.add('loading');
+            aiOption.innerHTML = `
+                <h3>🤖 AI Generate</h3>
+                <div class="message-thinking">
+                    <span>Generating question</span>
+                    <div class="thinking-dots">
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/generate-question', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        gradeLevel,
+                        subject,
+                        learningOutcomes,
+                        concepts
+                    })
+                });
+
+                const data = await response.json();
+                currentQuestion = data.question;
+                
+                // Show the generated question
+                document.getElementById('questionText').textContent = data.question;
+                document.getElementById('generatedQuestion').classList.add('active');
+                
+                // Reset the AI option
+                aiOption.classList.remove('loading');
+                aiOption.innerHTML = `
+                    <h3>🤖 AI Generate</h3>
+                    <p>Let AI create a targeted practice question based on your learning outcomes and concepts</p>
+                `;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to generate question. Please try again or write your own.');
+                
+                // Reset the AI option
+                aiOption.classList.remove('loading');
+                aiOption.innerHTML = `
+                    <h3>🤖 AI Generate</h3>
+                    <p>Let AI create a targeted practice question based on your learning outcomes and concepts</p>
+                `;
+            }
+        }
+
+        function editQuestion() {
+            const editArea = document.getElementById('questionEditArea');
+            const editText = document.getElementById('questionEditText');
+            editText.value = currentQuestion;
+            editArea.classList.add('active');
+        }
+
+        function saveEditedQuestion() {
+            const editedText = document.getElementById('questionEditText').value.trim();
+            if (editedText) {
+                currentQuestion = editedText;
+                document.getElementById('questionText').textContent = editedText;
+                document.getElementById('questionEditArea').classList.remove('active');
+            }
+        }
+
+        function cancelEdit() {
+            document.getElementById('questionEditArea').classList.remove('active');
+        }
+
+        function regenerateQuestion() {
+            document.getElementById('generatedQuestion').classList.remove('active');
+            generateAIQuestion();
+        }
+
+        // Start simulation
+        async function startSimulation() {
+            const gradeLevel = document.getElementById('gradeLevel').value;
+            const subject = document.getElementById('subject').value;
+            const learningOutcomes = document.getElementById('learningOutcomes').value;
+            const concepts = document.getElementById('concepts').value;
+
+            // Get the question
+            let question = currentQuestion;
+            if (!question) {
+                question = document.getElementById('customQuestion').value.trim();
+                if (!question) {
+                    alert('Please provide a practice question.');
+                    return;
+                }
+            }
+
+            // Show loading in header
+            document.querySelector('.header p').innerHTML = `
+                <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    Creating your student...
+                    <div class="thinking-dots">
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                    </div>
+                </span>
+            `;
+            
+            try {
+                const response = await fetch('/api/generate-scenario', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        gradeLevel,
+                        subject,
+                        learningOutcomes,
+                        concepts,
+                        question: question,
+                        studentPersona: getPersonaData()
+                    })
+                });
+
+                const data = await response.json();
+                currentScenario = data;
+                
+                // Reset header
+                document.querySelector('.header p').textContent = 'AI-Powered Teaching Practice Platform';
+                
+                // Setup simulation interface
+                document.getElementById('questionGeneration').style.display = 'none';
+                document.getElementById('simulation').style.display = 'flex';
+                
+                // Setup student info
+                const studentName = data.student.name;
+                const studentAvatar = document.getElementById('studentAvatar');
+                studentAvatar.textContent = studentName.charAt(0).toUpperCase();
+                document.getElementById('studentName').textContent = studentName;
+                document.getElementById('studentStatus').textContent = `${data.student.performanceLevel} student`;
+                
+                // Display student profile with persona info
+                const persona = data.persona || {};
+                document.getElementById('studentProfile').innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div><strong>Name:</strong> ${data.student.name}</div>
+                        <div><strong>Level:</strong> ${data.student.performanceLevel}</div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong>Background:</strong> ${data.student.background}
+                    </div>
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 0.9em;">
+                        <strong>Persona Traits:</strong><br>
+                        Readiness: ${persona.conceptual_readiness || 5}/10 | 
+                        Awareness: ${persona.metacognitive_awareness || 5}/10 | 
+                        Persistence: ${persona.persistence || 5}/10 | 
+                        Confidence: ${persona.confidence_level || 5}/10<br>
+                        <strong>Learning Style:</strong> ${persona.communication_style || 'verbal'}
+                    </div>
+                `;
+
+                // Setup misconception options
+                const optionsContainer = document.getElementById('misconceptionOptions');
+                optionsContainer.innerHTML = '';
+                data.misconceptionOptions.forEach((option, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'misconception-option';
+                    div.textContent = option;
+                    div.onclick = () => selectMisconception(index);
+                    optionsContainer.appendChild(div);
+                });
+
+                // Present the question and get initial response
+                addMessage('teacher', question);
+                
+                // Get student's initial response
+                const initialResponse = await getStudentResponse(question);
+                addMessage('student', initialResponse);
+                
+                // Add initial evidence
+                addEvidence("Student's initial response reveals potential misconception patterns");
+                
+                // Show evidence log and make misconception analysis required
+                document.getElementById('evidenceCard').style.display = 'block';
+                document.getElementById('misconceptionCard').style.display = 'block';
+                
+                updateProgress(25);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to generate scenario. Please try again.');
+                document.querySelector('.header p').textContent = 'AI-Powered Teaching Practice Platform';
+            }
+        }
+
+        // Handle key press in teacher input
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendTeacherMessage();
+            }
+        }
+
+        // Send teacher message
+        async function sendTeacherMessage() {
+            const input = document.getElementById('teacherInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Check if misconception analysis is required
+            if (document.getElementById('misconceptionCard').style.display === 'block' && 
+                !document.getElementById('misconceptionCard').classList.contains('completed')) {
+                alert('Please complete the misconception analysis first before continuing the conversation.');
+                return;
+            }
+
+            addMessage('teacher', message);
+            input.value = '';
+            
+            // Disable input while processing
+            input.disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            
+            // Show thinking indicator
+            showThinkingMessage();
+            
+            try {
+                const response = await getStudentResponse(message);
+                removeThinkingMessage();
+                addMessage('student', response);
+                
+                // Add evidence
+                addEvidence(`Round ${currentRound}: Student response to "${message.substring(0, 50)}..."`);
+                
+                // Re-enable input
+                input.disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                
+                updateProgress(50 + (chatHistory.length * 3));
+                
+            } catch (error) {
+                console.error('Error:', error);
+                removeThinkingMessage();
+                addMessage('system', 'Sorry, there was an error processing your message. Please try again.');
+                
+                // Re-enable input
+                input.disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+
+        // Show thinking indicator
+        function showThinkingMessage() {
+            const chatContainer = document.getElementById('chatMessages');
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'message student';
+            thinkingDiv.id = 'thinking-message';
+            thinkingDiv.innerHTML = `
+                <div class="message-sender">${currentScenario?.student?.name || 'Student'}</div>
+                <div class="message-content message-thinking">
+                    <span>thinking...</span>
+                    <div class="thinking-dots">
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(thinkingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Remove thinking indicator
+        function removeThinkingMessage() {
+            const thinkingMessage = document.getElementById('thinking-message');
+            if (thinkingMessage) {
+                thinkingMessage.remove();
+            }
+        }
+
+        // Get student response
+        async function getStudentResponse(teacherMessage) {
+            const response = await fetch('/api/student-response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    scenario: currentScenario,
+                    teacherMessage: teacherMessage,
+                    chatHistory: chatHistory
+                })
+            });
+
+            const data = await response.json();
+            return data.response;
+        }
+
+        // Add message to chat
+        function addMessage(sender, message) {
+            const chatContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const senderName = sender === 'teacher' ? 'You' : 
+                              sender === 'student' ? currentScenario?.student?.name || 'Student' : 
+                              'System';
+            
+            messageDiv.innerHTML = `
+                <div class="message-sender">${senderName}</div>
+                <div class="message-content">${message}</div>
+            `;
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Add to chat history
+            chatHistory.push({ sender, message });
+        }
+
+        // Add evidence to log
+        function addEvidence(text) {
+            evidenceLog.push({
+                round: currentRound,
+                text: text,
+                timestamp: new Date().toLocaleTimeString()
+            });
+            
+            const evidenceContainer = document.getElementById('evidenceLog');
+            const evidenceDiv = document.createElement('div');
+            evidenceDiv.className = 'evidence-item';
+            evidenceDiv.innerHTML = `
+                <div class="evidence-round">Round ${currentRound}</div>
+                <div class="evidence-text">${text}</div>
+            `;
+            evidenceContainer.appendChild(evidenceDiv);
+            evidenceContainer.scrollTop = evidenceContainer.scrollHeight;
+        }
+
+        // Select strategy
+        function selectStrategy(strategy) {
+            document.querySelectorAll('.strategy-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            event.target.closest('.strategy-card').classList.add('active');
+            selectedStrategy = strategy;
+            
+            // Add evidence about strategy selection
+            addEvidence(`Selected ${strategy} strategy for next interaction`);
+        }
+
+        // Select misconception option
+        function selectMisconception(index) {
+            const options = document.querySelectorAll('.misconception-option');
+            options.forEach((option, i) => {
+                option.classList.toggle('selected', i === index);
+            });
+            currentScenario.selectedMisconception = index;
+            
+            // Mark misconception analysis as completed
+            const misconceptionCard = document.getElementById('misconceptionCard');
+            misconceptionCard.classList.add('completed');
+            misconceptionCard.classList.remove('required');
+            
+            // Show intervention card
+            document.getElementById('interventionCard').style.display = 'block';
+            
+            // Add evidence
+            addEvidence(`Diagnosed misconception: ${currentScenario.misconceptionOptions[index]}`);
+        }
+
+        // Continue with intervention
+        async function continueWithIntervention() {
+            const intervention = document.getElementById('intervention').value.trim();
+            
+            if (!intervention) {
+                alert('Please describe your intervention strategy.');
+                return;
+            }
+            
+            // Add evidence about intervention
+            addEvidence(`Intervention strategy: ${intervention.substring(0, 100)}...`);
+            
+            // Increment round
+            currentRound++;
+            
+            // Generate AI response based on intervention
+            try {
+                // Show thinking in status
+                document.getElementById('studentStatus').innerHTML = `
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        Processing intervention...
+                        <div class="thinking-dots">
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                        </div>
+                    </span>
+                `;
+                
+                // Simulate AI-generated response based on intervention
+                const aiResponse = await generateInterventionResponse(intervention);
+                
+                // Reset status
+                document.getElementById('studentStatus').textContent = `${currentScenario.student.performanceLevel} student`;
+                
+                addMessage('system', `You implemented your intervention strategy. Let's see how ${currentScenario.student.name} responds...`);
+                addMessage('student', aiResponse);
+                
+                // Add evidence
+                addEvidence(`Round ${currentRound}: Student response to intervention shows ${Math.random() > 0.5 ? 'some progress' : 'persistent confusion'}`);
+                
+                // Reset intervention area for next round
+                document.getElementById('intervention').value = '';
+                document.getElementById('misconceptionCard').classList.remove('completed');
+                document.getElementById('misconceptionCard').classList.add('required');
+                
+                // Clear misconception selections
+                document.querySelectorAll('.misconception-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                updateProgress(60 + (currentRound * 10));
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('studentStatus').textContent = `${currentScenario.student.performanceLevel} student`;
+                alert('Failed to generate intervention response. Please try again.');
+            }
+        }
+
+        // Generate intervention response (simulated)
+        async function generateInterventionResponse(intervention) {
+            // This would call the API to generate a response based on the intervention
+            // For now, we'll use the existing student response API
+            const response = await fetch('/api/student-response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    scenario: currentScenario,
+                    teacherMessage: `Based on your intervention: ${intervention}`,
+                    chatHistory: chatHistory
+                })
+            });
+
+            const data = await response.json();
+            return data.response;
+        }
+
+        // Submit diagnosis and intervention
+        async function submitDiagnosis() {
+            const intervention = document.getElementById('intervention').value.trim();
+            
+            if (currentScenario.selectedMisconception === undefined) {
+                alert('Please select a misconception option.');
+                return;
+            }
+            
+            if (!intervention) {
+                alert('Please provide an intervention strategy.');
+                return;
+            }
+
+            // Show processing in header
+            document.querySelector('.header p').innerHTML = `
+                <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    Evaluating your teaching...
+                    <div class="thinking-dots">
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                    </div>
+                </span>
+            `;
+            
+            try {
+                const response = await fetch('/api/evaluate-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        scenario: currentScenario,
+                        selectedMisconception: currentScenario.selectedMisconception,
+                        intervention: intervention,
+                        chatHistory: chatHistory,
+                        selectedStrategy: selectedStrategy
+                    })
+                });
+
+                const evaluation = await response.json();
+                
+                // Reset header
+                document.querySelector('.header p').textContent = 'AI-Powered Teaching Practice Platform';
+                
+                // Update session data
+                sessionData.totalSessions++;
+                if (evaluation.correctDiagnosis) {
+                    sessionData.correctDiagnoses++;
+                }
+                sessionData.totalScore += evaluation.score;
+                sessionData.sessions.push(evaluation);
+                
+                saveSessionData();
+                updateStats();
+                
+                // Show feedback
+                showFeedback(evaluation);
+                
+                updateProgress(100);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.querySelector('.header p').textContent = 'AI-Powered Teaching Practice Platform';
+                alert('Failed to evaluate session. Please try again.');
+            }
+        }
+
+        // Show feedback
+        function showFeedback(evaluation) {
+            const feedbackContent = document.getElementById('feedbackContent');
+            feedbackContent.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Diagnostic Accuracy</h3>
+                        <div class="value">${evaluation.correctDiagnosis ? '✅' : '❌'}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Session Score</h3>
+                        <div class="value">${evaluation.score}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Questioning Quality</h3>
+                        <div class="value">${evaluation.questioningScore}/10</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Rounds Completed</h3>
+                        <div class="value">${currentRound}</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h3>🎯 Correct Misconception:</h3>
+                    <p style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">${evaluation.correctMisconception}</p>
+                    
+                    <h3>💡 Expert Feedback:</h3>
+                    <p style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">${evaluation.feedback}</p>
+                    
+                    <h3>📈 Areas for Improvement:</h3>
+                    <ul style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        ${evaluation.improvements.map(imp => `<li style="margin: 5px 0;">${imp}</li>`).join('')}
+                    </ul>
+                    
+                    <h3>📋 Your Evidence Log:</h3>
+                    <div class="evidence-log">
+                        ${evidenceLog.map(item => `
+                            <div class="evidence-item">
+                                <div class="evidence-round">Round ${item.round}</div>
+                                <div class="evidence-text">${item.text}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('simulation').style.display = 'none';
+            document.getElementById('feedback').style.display = 'block';
+        }
+
+        // Navigation functions
+        function nextScenario() {
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('setup').style.display = 'block';
+            resetSimulation();
+        }
+
+        function resetSession() {
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('setup').style.display = 'block';
+            resetSimulation();
+            
+            // Clear form
+            document.getElementById('gradeLevel').value = '';
+            document.getElementById('subject').value = '';
+            document.getElementById('learningOutcomes').value = '';
+            document.getElementById('concepts').value = '';
+            document.getElementById('customQuestion').value = '';
+            
+            // Reset persona to defaults
+            setPersonaPreset('default');
+        }
+
+        // Reset simulation state
+        function resetSimulation() {
+            currentScenario = null;
+            currentQuestion = null;
+            selectedStrategy = null;
+            evidenceLog = [];
+            currentRound = 1;
+            chatHistory = [];
+            
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="message system">
+                    <div class="message-content">
+                        <strong>🎯 Your Mission:</strong> Ask questions to understand how your student thinks about this problem and identify any misconceptions.
+                    </div>
+                </div>
+            `;
+            document.getElementById('intervention').value = '';
+            document.getElementById('generatedQuestion').classList.remove('active');
+            document.getElementById('questionEditArea').classList.remove('active');
+            document.getElementById('evidenceLog').innerHTML = '';
+            updateProgress(0);
+            
+            // Reset workspace cards
+            document.getElementById('evidenceCard').style.display = 'none';
+            document.getElementById('misconceptionCard').style.display = 'none';
+            document.getElementById('interventionCard').style.display = 'none';
+            document.getElementById('misconceptionCard').classList.remove('completed', 'required');
+            
+            // Clear selections
+            document.querySelectorAll('.misconception-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelectorAll('.strategy-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelectorAll('.question-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.getElementById('startSimBtn').disabled = true;
+            
+            // Re-enable inputs
+            document.getElementById('teacherInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+        }
+
+        // Update progress bar
+        function updateProgress(percentage) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        // Persona functionality
+        function togglePersonaSection() {
+            const controls = document.getElementById('personaControls');
+            const toggle = document.getElementById('personaToggle');
+            
+            if (controls.classList.contains('collapsed')) {
+                controls.classList.remove('collapsed');
+                toggle.textContent = '▼';
+            } else {
+                controls.classList.add('collapsed');
+                toggle.textContent = '▶';
+            }
+        }
+
+        function updateSliderValue(sliderId) {
+            const slider = document.getElementById(sliderId);
+            const valueSpan = document.getElementById(sliderId + 'Value');
+            valueSpan.textContent = slider.value;
+        }
+
+        function setPersonaPreset(preset) {
+            const presets = {
+                'struggling': {
+                    conceptualReadiness: 2,
+                    metacognitiveAwareness: 3,
+                    persistence: 2,
+                    confidenceLevel: 2,
+                    communicationStyle: 'verbal'
+                },
+                'confident': {
+                    conceptualReadiness: 7,
+                    metacognitiveAwareness: 6,
+                    persistence: 8,
+                    confidenceLevel: 9,
+                    communicationStyle: 'verbal'
+                },
+                'visual': {
+                    conceptualReadiness: 5,
+                    metacognitiveAwareness: 5,
+                    persistence: 6,
+                    confidenceLevel: 4,
+                    communicationStyle: 'visual'
+                },
+                'default': {
+                    conceptualReadiness: 5,
+                    metacognitiveAwareness: 5,
+                    persistence: 5,
+                    confidenceLevel: 5,
+                    communicationStyle: 'verbal'
+                }
+            };
+
+            const config = presets[preset];
+            if (config) {
+                document.getElementById('conceptualReadiness').value = config.conceptualReadiness;
+                document.getElementById('metacognitiveAwareness').value = config.metacognitiveAwareness;
+                document.getElementById('persistence').value = config.persistence;
+                document.getElementById('confidenceLevel').value = config.confidenceLevel;
+                document.getElementById('communicationStyle').value = config.communicationStyle;
+
+                // Update all slider value displays
+                updateSliderValue('conceptualReadiness');
+                updateSliderValue('metacognitiveAwareness');
+                updateSliderValue('persistence');
+                updateSliderValue('confidenceLevel');
+            }
+        }
+
+        function getPersonaData() {
+            return {
+                conceptual_readiness: parseInt(document.getElementById('conceptualReadiness').value),
+                metacognitive_awareness: parseInt(document.getElementById('metacognitiveAwareness').value),
+                persistence: parseInt(document.getElementById('persistence').value),
+                communication_style: document.getElementById('communicationStyle').value,
+                confidence_level: parseInt(document.getElementById('confidenceLevel').value)
+            };
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSessionData();
+            // Initialize persona section as collapsed
+            togglePersonaSection();
+        });
+    </script>
+</body>
+</html> 
