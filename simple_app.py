@@ -13,8 +13,12 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# Configure Gemini API
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# Configure Gemini API - only if API key is available
+api_key = os.getenv("GOOGLE_API_KEY")
+if api_key:
+    genai.configure(api_key=api_key)
+else:
+    print("⚠️  Warning: GOOGLE_API_KEY not found. AI features will be disabled.")
 
 app = FastAPI(
     title="TeachWise - Simple AI Teaching Simulator",
@@ -68,8 +72,29 @@ class QuestionGenerationRequest(BaseModel):
 # Gemini AI service
 class GeminiService:
     def __init__(self):
-        self.model = genai.GenerativeModel('gemini-1.5-pro')
-        print("🚀 Gemini API initialized - will attempt API calls directly")
+        self.model = None
+        self._initialize_model()
+    
+    def _initialize_model(self):
+        """Initialize the Gemini model only when needed"""
+        try:
+            api_key = os.getenv("GOOGLE_API_KEY")
+            if api_key:
+                self.model = genai.GenerativeModel('gemini-1.5-pro')
+                print("🚀 Gemini API initialized successfully")
+            else:
+                print("⚠️  Gemini API not initialized - no API key found")
+        except Exception as e:
+            print(f"❌ Error initializing Gemini API: {e}")
+            self.model = None
+    
+    def _check_api_available(self):
+        """Check if API is available before making calls"""
+        if not self.model:
+            raise HTTPException(
+                status_code=503, 
+                detail="AI service unavailable. Please check your GOOGLE_API_KEY environment variable."
+            )
     
     def _clean_json_response(self, text: str) -> str:
         """Clean JSON response by removing markdown code blocks"""
@@ -87,6 +112,8 @@ class GeminiService:
     
     def generate_question(self, grade_level: str, subject: str, learning_outcomes: str, concepts: str) -> Dict[str, Any]:
         """Generate a practice question based on learning outcomes and concepts"""
+        
+        self._check_api_available()
         
         prompt = f"""
         Generate a high-quality practice question for a {grade_level} {subject} class.
@@ -114,6 +141,8 @@ class GeminiService:
         """
         
         print(f"🔄 Calling Gemini API for question generation...")
+        if self.model is None:
+            raise HTTPException(status_code=503, detail="AI service unavailable")
         response = self.model.generate_content(prompt)
         print(f"✅ Gemini API response received")
         
@@ -124,6 +153,8 @@ class GeminiService:
     
     def generate_scenario(self, grade_level: str, subject: str, learning_outcomes: str, concepts: str, question: Optional[str], persona: StudentPersona) -> Dict[str, Any]:
         """Generate a complete teaching scenario with student profile and misconceptions"""
+        
+        self._check_api_available()
         
         if not question:
             raise ValueError("Question is required for scenario generation")
@@ -196,6 +227,8 @@ class GeminiService:
         """
         
         print(f"🔄 Calling Gemini API for scenario generation with question...")
+        if self.model is None:
+            raise HTTPException(status_code=503, detail="AI service unavailable")
         response = self.model.generate_content(prompt)
         print(f"✅ Gemini API response received")
         
@@ -206,6 +239,8 @@ class GeminiService:
     
     def generate_student_response(self, scenario: Dict[str, Any], teacher_message: str, chat_history: List[Dict[str, str]]) -> str:
         """Generate student response based on their misconception and persona"""
+        
+        self._check_api_available()
         
         student = scenario.get('student', {})
         misconception = student.get('actualMisconception', '')
@@ -263,6 +298,8 @@ class GeminiService:
         """
         
         print(f"🔄 Calling Gemini API for reasoned student response...")
+        if self.model is None:
+            raise HTTPException(status_code=503, detail="AI service unavailable")
         response = self.model.generate_content(prompt)
         print(f"✅ Gemini API response received")
         
@@ -270,6 +307,9 @@ class GeminiService:
     
     def evaluate_session(self, scenario: Dict[str, Any], selected_misconception: int, intervention: str, chat_history: List[Dict[str, str]], selected_strategy: Optional[str] = None) -> Dict[str, Any]:
         """Evaluate the teacher's diagnosis and intervention"""
+        
+        self._check_api_available()
+        
         correct_index = scenario.get('correctMisconceptionIndex', 0)
         correct_diagnosis = selected_misconception == correct_index
         
@@ -324,6 +364,8 @@ class GeminiService:
         """
         
         print(f"🔄 Calling Gemini API for session evaluation...")
+        if self.model is None:
+            raise HTTPException(status_code=503, detail="AI service unavailable")
         response = self.model.generate_content(prompt)
         print(f"✅ Gemini API response received")
         
@@ -405,10 +447,21 @@ async def evaluate_session(request: EvaluationRequest):
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
+    api_key_status = "available" if os.getenv("GOOGLE_API_KEY") else "missing"
     return {
         "status": "healthy",
         "version": "2.0",
+        "api_key": api_key_status,
         "features": ["Teaching Simulation", "AI Student Responses", "Session Evaluation"]
+    }
+
+@app.get("/test")
+async def test_endpoint():
+    """Test endpoint to verify deployment"""
+    return {
+        "message": "TeachWise API is running!",
+        "timestamp": "2024-01-01T00:00:00Z",
+        "environment": "production"
     }
 
 if __name__ == "__main__":
