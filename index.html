@@ -915,12 +915,21 @@
                     
                     <div class="form-group">
                         <label for="gradeLevel">Grade Level:</label>
-                        <select id="gradeLevel">
-                            <option value="">Select Grade Level</option>
-                            <option value="elementary">Elementary (K-5)</option>
-                            <option value="middle">Middle School (6-8)</option>
-                            <option value="high">High School (9-12)</option>
-                            <option value="college">College/University</option>
+                        <select id="gradeLevel" required>
+                            <option value="">Select grade level</option>
+                            <option value="K-2">K-2 (Kindergarten to Grade 2)</option>
+                            <option value="3-5">3-5 (Grades 3-5)</option>
+                            <option value="6-8">6-8 (Middle School)</option>
+                            <option value="9-12">9-12 (High School)</option>
+                            <option value="College">College/University</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="language">Language:</label>
+                        <select id="language" required>
+                            <option value="english">English</option>
+                            <option value="traditional_chinese">繁體中文 (Traditional Chinese)</option>
                         </select>
                     </div>
 
@@ -1255,6 +1264,7 @@
             const subject = document.getElementById('subject').value;
             const learningOutcomes = document.getElementById('learningOutcomes').value;
             const concepts = document.getElementById('concepts').value;
+            const language = document.getElementById('language').value;
 
             // Show loading state
             const aiOption = document.querySelector('.question-option');
@@ -1281,7 +1291,8 @@
                         gradeLevel,
                         subject,
                         learningOutcomes,
-                        concepts
+                        concepts,
+                        language
                     })
                 });
 
@@ -1343,6 +1354,7 @@
             const subject = document.getElementById('subject').value;
             const learningOutcomes = document.getElementById('learningOutcomes').value;
             const concepts = document.getElementById('concepts').value;
+            const language = document.getElementById('language').value;
 
             // Get the question
             let question = currentQuestion;
@@ -1378,7 +1390,8 @@
                         learningOutcomes,
                         concepts,
                         question: question,
-                        studentPersona: getPersonaData()
+                        studentPersona: getPersonaData(),
+                        language: language
                     })
                 });
 
@@ -1540,6 +1553,7 @@
 
         // Get student response
         async function getStudentResponse(teacherMessage) {
+            const language = document.getElementById('language').value;
             const response = await fetch('/api/student-response', {
                 method: 'POST',
                 headers: {
@@ -1548,7 +1562,8 @@
                 body: JSON.stringify({
                     scenario: currentScenario,
                     teacherMessage: teacherMessage,
-                    chatHistory: chatHistory
+                    chatHistory: chatHistory,
+                    language: language
                 })
             });
 
@@ -1737,6 +1752,7 @@
             `;
             
             try {
+                const language = document.getElementById('language').value;
                 const response = await fetch('/api/evaluate-session', {
                     method: 'POST',
                     headers: {
@@ -1747,7 +1763,8 @@
                         selectedMisconception: currentScenario.selectedMisconception,
                         intervention: intervention,
                         chatHistory: chatHistory,
-                        selectedStrategy: selectedStrategy
+                        selectedStrategy: selectedStrategy,
+                        language: language
                     })
                 });
 
@@ -1844,6 +1861,7 @@
             
             // Clear form
             document.getElementById('gradeLevel').value = '';
+            document.getElementById('language').value = 'english';
             document.getElementById('subject').value = '';
             document.getElementById('learningOutcomes').value = '';
             document.getElementById('concepts').value = '';
