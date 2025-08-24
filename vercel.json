@@ -11,11 +11,15 @@
       "dest": "/api/index.py"
     },
     {
-      "src": "/api/(.*)",
+      "src": "/health",
       "dest": "/api/index.py"
     },
     {
-      "src": "/(.*)",
+      "src": "/test",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/api/(.*)",
       "dest": "/api/index.py"
     }
   ]

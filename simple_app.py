@@ -10,13 +10,17 @@ import random
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file (only if file exists)
+try:
+    load_dotenv()
+except:
+    pass  # .env file doesn't exist in Vercel, that's fine
 
-# Configure Gemini API - only if API key is available
-api_key = os.getenv("GOOGLE_API_KEY")
+# Configure Gemini API - check both possible environment variable names
+api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
+    print("🚀 Gemini API initialized successfully")
 else:
     print("⚠️  Warning: GOOGLE_API_KEY not found. AI features will be disabled.")
 
@@ -82,10 +86,10 @@ class GeminiService:
     def _initialize_model(self):
         """Initialize the Gemini model only when needed"""
         try:
-            api_key = os.getenv("GOOGLE_API_KEY")
+            api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
             if api_key:
                 self.model = genai.GenerativeModel('gemini-1.5-pro')
-                print("🚀 Gemini API initialized successfully")
+                print("🚀 Gemini API model initialized successfully")
             else:
                 print("⚠️  Gemini API not initialized - no API key found")
         except Exception as e:
