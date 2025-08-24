@@ -5,6 +5,7 @@ A simplified AI-powered teaching practice platform that helps educators diagnose
 ## Features
 
 🎯 **Simple Setup**: Teachers input grade level, subject, learning outcomes, and key concepts  
+🔑 **User-Provided API Keys**: Secure, no server-side API key setup required  
 🤖 **AI Student Simulation**: Realistic student responses with authentic misconceptions  
 💬 **Interactive Chat**: Natural conversation interface for diagnostic questioning  
 🔍 **Misconception Detection**: Multiple choice diagnosis with expert feedback  
@@ -15,14 +16,14 @@ A simplified AI-powered teaching practice platform that helps educators diagnose
 
 ### Prerequisites
 - Python 3.8+
-- Gemini API key
+- Google Gemini API key (users provide their own)
 
 ### Installation
 
 1. **Clone and setup**:
 ```bash
 git clone <your-repo>
-cd teachbetter
+cd teachwise
 ```
 
 2. **Install dependencies**:
@@ -30,23 +31,23 @@ cd teachbetter
 pip install -r requirements.txt
 ```
 
-3. **Set up environment**:
+3. **Run the app**:
 ```bash
-export GEMINI_API_KEY="your_gemini_api_key_here"
+python3 start.py
 ```
 
-4. **Run the app**:
-```bash
-python simple_app.py
-```
+4. **Open your browser**: Navigate to `http://localhost:8000`
 
-5. **Open your browser**: Navigate to `http://localhost:8000`
+5. **Get API key**: Visit [Google AI Studio](https://aistudio.google.com/app/apikey) to get your free API key
+
+6. **Enter API key**: Paste your API key in the app to start using AI features
 
 ## How It Works
 
 ### 1. Setup Your Scenario
+- Enter your Google Gemini API key (secure and never stored)
 - Select grade level (K-5, 6-8, 9-12, College)
-- Enter subject area
+- Enter subject area  
 - Define learning outcomes
 - List key concepts
 
@@ -80,9 +81,12 @@ python simple_app.py
 - `POST /api/evaluate-session` - Evaluate teacher performance
 - `GET /health` - Health check
 
-## Environment Variables
+## Security & Privacy
 
-- `GEMINI_API_KEY` - Required for AI functionality
+- **No server-side API keys**: Users provide their own Google Gemini API keys
+- **Session-only storage**: API keys are only used during the session and never stored
+- **Local data**: All progress tracking stored locally in your browser
+- **No external dependencies**: Self-contained application
 
 ## Development
 

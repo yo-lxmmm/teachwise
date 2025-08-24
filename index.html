@@ -934,6 +934,15 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="apiKey">🔑 Your Google Gemini API Key:</label>
+                        <input type="password" id="apiKey" placeholder="Enter your Google Gemini API key (starts with AIza...)" required>
+                        <small style="color: #666; font-size: 0.85em; margin-top: 5px; display: block;">
+                            Your API key is secure and only used for this session. 
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #007bff;">Get a free key here →</a>
+                        </small>
+                    </div>
+
+                    <div class="form-group">
                         <label for="subject">Subject:</label>
                         <input type="text" id="subject" placeholder="e.g., Mathematics, Science, English">
                     </div>
@@ -1223,9 +1232,16 @@
             const subject = document.getElementById('subject').value;
             const learningOutcomes = document.getElementById('learningOutcomes').value;
             const concepts = document.getElementById('concepts').value;
+            const apiKey = document.getElementById('apiKey').value;
 
-            if (!gradeLevel || !subject || !learningOutcomes || !concepts) {
-                alert('Please fill in all fields to continue.');
+            if (!gradeLevel || !subject || !learningOutcomes || !concepts || !apiKey) {
+                alert('Please fill in all fields including your API key to continue.');
+                return;
+            }
+
+            // Validate API key format
+            if (!apiKey.startsWith('AIza') || apiKey.length !== 39) {
+                alert('Please enter a valid Google Gemini API key. It should start with "AIza" and be 39 characters long.');
                 return;
             }
 
@@ -1265,6 +1281,7 @@
             const learningOutcomes = document.getElementById('learningOutcomes').value;
             const concepts = document.getElementById('concepts').value;
             const language = document.getElementById('language').value;
+            const apiKey = document.getElementById('apiKey').value;
 
             // Show loading state
             const aiOption = document.querySelector('.question-option');
@@ -1292,7 +1309,8 @@
                         subject,
                         learningOutcomes,
                         concepts,
-                        language
+                        language,
+                        apiKey
                     })
                 });
 
@@ -1355,6 +1373,7 @@
             const learningOutcomes = document.getElementById('learningOutcomes').value;
             const concepts = document.getElementById('concepts').value;
             const language = document.getElementById('language').value;
+            const apiKey = document.getElementById('apiKey').value;
 
             // Get the question
             let question = currentQuestion;
@@ -1391,7 +1410,8 @@
                         concepts,
                         question: question,
                         studentPersona: getPersonaData(),
-                        language: language
+                        language: language,
+                        apiKey: apiKey
                     })
                 });
 
@@ -1554,6 +1574,7 @@
         // Get student response
         async function getStudentResponse(teacherMessage) {
             const language = document.getElementById('language').value;
+            const apiKey = document.getElementById('apiKey').value;
             const response = await fetch('/api/student-response', {
                 method: 'POST',
                 headers: {
@@ -1563,7 +1584,8 @@
                     scenario: currentScenario,
                     teacherMessage: teacherMessage,
                     chatHistory: chatHistory,
-                    language: language
+                    language: language,
+                    apiKey: apiKey
                 })
             });
 
@@ -1709,6 +1731,7 @@
         async function generateInterventionResponse(intervention) {
             // This would call the API to generate a response based on the intervention
             // For now, we'll use the existing student response API
+            const apiKey = document.getElementById('apiKey').value;
             const response = await fetch('/api/student-response', {
                 method: 'POST',
                 headers: {
@@ -1717,7 +1740,8 @@
                 body: JSON.stringify({
                     scenario: currentScenario,
                     teacherMessage: `Based on your intervention: ${intervention}`,
-                    chatHistory: chatHistory
+                    chatHistory: chatHistory,
+                    apiKey: apiKey
                 })
             });
 
@@ -1753,6 +1777,7 @@
             
             try {
                 const language = document.getElementById('language').value;
+                const apiKey = document.getElementById('apiKey').value;
                 const response = await fetch('/api/evaluate-session', {
                     method: 'POST',
                     headers: {
@@ -1764,7 +1789,8 @@
                         intervention: intervention,
                         chatHistory: chatHistory,
                         selectedStrategy: selectedStrategy,
-                        language: language
+                        language: language,
+                        apiKey: apiKey
                     })
                 });
 

@@ -3,8 +3,9 @@
 ## Prerequisites
 
 1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
-2. **Google API Key**: Get one from [Google AI Studio](https://aistudio.google.com/)
-3. **GitHub Repository**: Push your code to GitHub
+2. **GitHub Repository**: Push your code to GitHub
+
+**Note**: No server-side API key setup required! Users provide their own Google Gemini API keys.
 
 ## Step-by-Step Deployment
 
@@ -23,18 +24,7 @@ git push origin main
 3. Import your GitHub repository
 4. Vercel will automatically detect the Python project
 
-### 3. Set Environment Variables
-
-In your Vercel dashboard:
-
-1. Go to your project settings
-2. Navigate to "Environment Variables"
-3. Add the following variable:
-   - **Name**: `GOOGLE_API_KEY`
-   - **Value**: Your Google API key from AI Studio
-   - **Environments**: Production, Preview, Development
-
-### 4. Deploy
+### 3. Deploy (No Environment Variables Needed!)
 
 1. Click "Deploy" 
 2. Vercel will build and deploy your app
@@ -48,8 +38,9 @@ In your Vercel dashboard:
 
 ## Important Notes
 
-- The app uses Google's Gemini API for AI functionality
-- Environment variables are set in Vercel dashboard, not in `.env` files
+- **User-Provided API Keys**: Users enter their own Google Gemini API keys in the app
+- **No Server Setup**: No environment variables or API key configuration needed
+- **Secure**: API keys are only used per-session and never stored
 - The frontend (`index.html`) is served from the root
 - All API endpoints are handled by the FastAPI backend
 
@@ -57,13 +48,14 @@ In your Vercel dashboard:
 
 1. Visit your Vercel URL
 2. Check that the homepage loads
-3. Try creating a teaching scenario to test the AI integration
-4. Monitor the Vercel function logs for any errors
+3. Get a free Google Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+4. Enter your API key in the app and try creating a teaching scenario
+5. Monitor the Vercel function logs for any errors
 
 ## Troubleshooting
 
-- **API Key Issues**: Ensure `GOOGLE_API_KEY` is set correctly in Vercel
-- **Build Errors**: Check the Vercel build logs for Python dependency issues
+- **API Key Issues**: Ensure users enter a valid Google Gemini API key
+- **Build Errors**: Check the Vercel build logs for Python dependency issues  
 - **Runtime Errors**: Check the Vercel function logs for application errors
 
 ## Alternative Deployment Options
