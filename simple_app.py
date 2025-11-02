@@ -98,8 +98,8 @@ class GeminiService:
                     print(f"❌ DEBUG: Failed to configure genai: {config_error}")
                     raise
                 
-                # Use gemini-2.5-pro as the primary model with fallbacks
-                model_names = ['gemini-2.5-pro', 'gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro']
+                # Use gemini-2.5-flash as the primary model with fallbacks
+                model_names = ['gemini-2.5-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro']
                 
                 last_error = None
                 for model_name in model_names:
