@@ -1299,7 +1299,21 @@
                     })
                 });
 
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                if (!data.question) {
+                    throw new Error('Invalid response from server: missing question');
+                }
+                
                 currentQuestion = data.question;
                 
                 // Show the generated question
@@ -1314,8 +1328,9 @@
                 `;
                 
             } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to generate question. Please try again or write your own.');
+                console.error('Error generating question:', error);
+                const errorMessage = error.message || 'Failed to generate question. Please try again or write your own.';
+                alert(`Error: ${errorMessage}\n\nPlease check:\n1. Is GOOGLE_API_KEY set in Vercel?\n2. Check browser console for details`);
                 
                 // Reset the AI option
                 aiOption.classList.remove('loading');
@@ -1399,7 +1414,21 @@
                     })
                 });
 
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                    throw new Error(errorData.error || errorData.help || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error + (data.help ? '\n\n' + data.help : ''));
+                }
+                
+                if (!data.student) {
+                    throw new Error('Invalid response from server: missing student data');
+                }
+                
                 currentScenario = data;
                 
                 // Reset header
@@ -1464,8 +1493,9 @@
                 updateProgress(25);
                 
             } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to generate scenario. Please try again.');
+                console.error('Error generating scenario:', error);
+                const errorMessage = error.message || 'Failed to generate scenario. Please try again.';
+                alert(`Error: ${errorMessage}\n\nPlease check:\n1. Is GOOGLE_API_KEY set in Vercel?\n2. Check browser console for details`);
                 document.querySelector('.header p').textContent = 'AI-Powered Teaching Practice Platform';
             }
         }
@@ -1516,9 +1546,11 @@
                 updateProgress(50 + (chatHistory.length * 3));
                 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error getting student response:', error);
                 removeThinkingMessage();
-                addMessage('system', 'Sorry, there was an error processing your message. Please try again.');
+                const errorMessage = error.message || 'Sorry, there was an error processing your message.';
+                addMessage('system', `Error: ${errorMessage}\n\nPlease check Vercel environment variables and try again.`);
+                console.log('Full error details:', error);
                 
                 // Re-enable input
                 input.disabled = false;
@@ -1573,7 +1605,21 @@
                 })
             });
 
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                throw new Error(errorData.error || errorData.help || `HTTP ${response.status}: ${response.statusText}`);
+            }
+
             const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error + (data.help ? '\n\n' + data.help : ''));
+            }
+            
+            if (!data.response) {
+                throw new Error('Invalid response from server: missing student response');
+            }
+            
             return data.response;
         }
 
@@ -1705,9 +1751,11 @@
                 updateProgress(60 + (currentRound * 10));
                 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error generating intervention response:', error);
                 document.getElementById('studentStatus').textContent = `${currentScenario.student.performanceLevel} student`;
-                alert('Failed to generate intervention response. Please try again.');
+                const errorMessage = error.message || 'Failed to generate intervention response.';
+                alert(`Error: ${errorMessage}\n\nPlease check Vercel environment variables and try again.`);
+                console.log('Full error details:', error);
             }
         }
 
@@ -1729,7 +1777,21 @@
                 })
             });
 
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                throw new Error(errorData.error || errorData.help || `HTTP ${response.status}: ${response.statusText}`);
+            }
+
             const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error + (data.help ? '\n\n' + data.help : ''));
+            }
+            
+            if (!data.response) {
+                throw new Error('Invalid response from server: missing student response');
+            }
+            
             return data.response;
         }
 
@@ -1777,7 +1839,16 @@
                     })
                 });
 
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                    throw new Error(errorData.error || errorData.help || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const evaluation = await response.json();
+                
+                if (evaluation.error) {
+                    throw new Error(evaluation.error + (evaluation.help ? '\n\n' + evaluation.help : ''));
+                }
                 
                 // Reset header
                 document.querySelector('.header p').textContent = 'AI-Powered Teaching Practice Platform';
@@ -1799,9 +1870,11 @@
                 updateProgress(100);
                 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error evaluating session:', error);
                 document.querySelector('.header p').textContent = 'AI-Powered Teaching Practice Platform';
-                alert('Failed to evaluate session. Please try again.');
+                const errorMessage = error.message || 'Failed to evaluate session. Please try again.';
+                alert(`Error: ${errorMessage}\n\nPlease check:\n1. Is GOOGLE_API_KEY set in Vercel?\n2. Check browser console for details`);
+                console.log('Full error details:', error);
             }
         }
 
