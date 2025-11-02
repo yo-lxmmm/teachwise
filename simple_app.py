@@ -88,10 +88,8 @@ class GeminiService:
         try:
             api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
             if api_key:
-                # Try different model names in order of preference
-                # gemini-1.5-flash is faster and more widely available
-                # gemini-1.5-pro may not be available in all regions/API versions
-                model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+                # Use gemini-2.5-pro as the primary model with fallbacks
+                model_names = ['gemini-2.5-pro', 'gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro']
                 
                 for model_name in model_names:
                     try:
