@@ -48,11 +48,24 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             
             if path == '/health':
+                # Check API key availability
+                api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+                api_key_status = "available" if api_key else "missing"
+                
+                # Check if gemini service is available and initialized
+                ai_ready = False
+                if TEACHWISE_AVAILABLE:
+                    try:
+                        ai_ready = gemini_service.model is not None
+                    except:
+                        ai_ready = False
+                
                 response_data = {
                     "status": "healthy",
                     "version": "2.0", 
-                    "api_key": "available" if api_key else "missing",
-                    "ai_ready": bool(gemini_model)
+                    "api_key": api_key_status,
+                    "ai_ready": ai_ready,
+                    "teachwise_available": TEACHWISE_AVAILABLE
                 }
             else:
                 response_data = {"message": "TeachWise API", "path": path}
@@ -82,71 +95,135 @@ class handler(BaseHTTPRequestHandler):
         
         # Route API calls using your existing TeachWise functionality
         if path == '/api/generate-question':
-            if TEACHWISE_AVAILABLE:
-                try:
-                    grade_level = request_data.get("gradeLevel", "5th grade")
-                    subject = request_data.get("subject", "Math")
-                    learning_outcomes = request_data.get("learningOutcomes", "Basic understanding")
-                    concepts = request_data.get("concepts", "Basic concepts")
-                    language = request_data.get("language", "english")
-                    
-                    response_data = gemini_service.generate_question(grade_level, subject, learning_outcomes, concepts, language)
-                except Exception as e:
-                    response_data = {"error": f"Question generation failed: {str(e)}"}
-            else:
-                response_data = {"error": "TeachWise service not available"}
+            if not TEACHWISE_AVAILABLE:
+                response_data = {"error": "TeachWise service not available - check server logs"}
+                self.wfile.write(json.dumps(response_data).encode())
+                return
+            
+            if gemini_service.model is None:
+                response_data = {
+                    "error": "AI service unavailable - GOOGLE_API_KEY environment variable not set in Vercel",
+                    "help": "Please set GOOGLE_API_KEY in Vercel project settings > Environment Variables"
+                }
+                self.wfile.write(json.dumps(response_data).encode())
+                return
+                
+            try:
+                grade_level = request_data.get("gradeLevel", "5th grade")
+                subject = request_data.get("subject", "Math")
+                learning_outcomes = request_data.get("learningOutcomes", "Basic understanding")
+                concepts = request_data.get("concepts", "Basic concepts")
+                language = request_data.get("language", "english")
+                
+                response_data = gemini_service.generate_question(grade_level, subject, learning_outcomes, concepts, language)
+            except Exception as e:
+                import traceback
+                error_trace = traceback.format_exc()
+                print(f"❌ Question generation error: {error_trace}")
+                response_data = {
+                    "error": f"Question generation failed: {str(e)}",
+                    "details": error_trace if os.getenv("DEBUG") else None
+                }
                 
         elif path == '/api/generate-scenario':
-            if TEACHWISE_AVAILABLE:
-                try:
-                    grade_level = request_data.get("gradeLevel", "5th grade")
-                    subject = request_data.get("subject", "Math")
-                    learning_outcomes = request_data.get("learningOutcomes", "Basic understanding")
-                    concepts = request_data.get("concepts", "Basic concepts")
-                    question = request_data.get("question", "")
-                    language = request_data.get("language", "english")
-                    
-                    # Create student persona from request
-                    student_persona_data = request_data.get("studentPersona", {})
-                    from simple_app import StudentPersona
-                    student_persona = StudentPersona(**student_persona_data)
-                    
-                    response_data = gemini_service.generate_scenario(grade_level, subject, learning_outcomes, concepts, question, student_persona, language)
-                except Exception as e:
-                    response_data = {"error": f"Scenario generation failed: {str(e)}"}
-            else:
-                response_data = {"error": "TeachWise service not available"}
+            if not TEACHWISE_AVAILABLE:
+                response_data = {"error": "TeachWise service not available - check server logs"}
+                self.wfile.write(json.dumps(response_data).encode())
+                return
+            
+            if gemini_service.model is None:
+                response_data = {
+                    "error": "AI service unavailable - GOOGLE_API_KEY environment variable not set in Vercel",
+                    "help": "Please set GOOGLE_API_KEY in Vercel project settings > Environment Variables"
+                }
+                self.wfile.write(json.dumps(response_data).encode())
+                return
+                
+            try:
+                grade_level = request_data.get("gradeLevel", "5th grade")
+                subject = request_data.get("subject", "Math")
+                learning_outcomes = request_data.get("learningOutcomes", "Basic understanding")
+                concepts = request_data.get("concepts", "Basic concepts")
+                question = request_data.get("question", "")
+                language = request_data.get("language", "english")
+                
+                # Create student persona from request
+                student_persona_data = request_data.get("studentPersona", {})
+                from simple_app import StudentPersona
+                student_persona = StudentPersona(**student_persona_data)
+                
+                response_data = gemini_service.generate_scenario(grade_level, subject, learning_outcomes, concepts, question, student_persona, language)
+            except Exception as e:
+                import traceback
+                error_trace = traceback.format_exc()
+                print(f"❌ Scenario generation error: {error_trace}")
+                response_data = {
+                    "error": f"Scenario generation failed: {str(e)}",
+                    "details": error_trace if os.getenv("DEBUG") else None
+                }
                 
         elif path == '/api/student-response':
-            if TEACHWISE_AVAILABLE:
-                try:
-                    scenario = request_data.get("scenario", {})
-                    teacher_message = request_data.get("teacherMessage", "")
-                    chat_history = request_data.get("chatHistory", [])
-                    language = request_data.get("language", "english")
-                    
-                    student_response = gemini_service.generate_student_response(scenario, teacher_message, chat_history, language)
-                    response_data = {"response": student_response}
-                except Exception as e:
-                    response_data = {"error": f"Student response failed: {str(e)}"}
-            else:
-                response_data = {"error": "TeachWise service not available"}
+            if not TEACHWISE_AVAILABLE:
+                response_data = {"error": "TeachWise service not available - check server logs"}
+                self.wfile.write(json.dumps(response_data).encode())
+                return
+            
+            if gemini_service.model is None:
+                response_data = {
+                    "error": "AI service unavailable - GOOGLE_API_KEY environment variable not set in Vercel",
+                    "help": "Please set GOOGLE_API_KEY in Vercel project settings > Environment Variables"
+                }
+                self.wfile.write(json.dumps(response_data).encode())
+                return
+                
+            try:
+                scenario = request_data.get("scenario", {})
+                teacher_message = request_data.get("teacherMessage", "")
+                chat_history = request_data.get("chatHistory", [])
+                language = request_data.get("language", "english")
+                
+                student_response = gemini_service.generate_student_response(scenario, teacher_message, chat_history, language)
+                response_data = {"response": student_response}
+            except Exception as e:
+                import traceback
+                error_trace = traceback.format_exc()
+                print(f"❌ Student response error: {error_trace}")
+                response_data = {
+                    "error": f"Student response failed: {str(e)}",
+                    "details": error_trace if os.getenv("DEBUG") else None
+                }
                 
         elif path == '/api/evaluate-session':
-            if TEACHWISE_AVAILABLE:
-                try:
-                    scenario = request_data.get("scenario", {})
-                    selected_misconception = request_data.get("selectedMisconception", 0)
-                    intervention = request_data.get("intervention", "")
-                    chat_history = request_data.get("chatHistory", [])
-                    selected_strategy = request_data.get("selectedStrategy")
-                    language = request_data.get("language", "english")
-                    
-                    response_data = gemini_service.evaluate_session(scenario, selected_misconception, intervention, chat_history, selected_strategy, language)
-                except Exception as e:
-                    response_data = {"error": f"Session evaluation failed: {str(e)}"}
-            else:
-                response_data = {"error": "TeachWise service not available"}
+            if not TEACHWISE_AVAILABLE:
+                response_data = {"error": "TeachWise service not available - check server logs"}
+                self.wfile.write(json.dumps(response_data).encode())
+                return
+            
+            if gemini_service.model is None:
+                response_data = {
+                    "error": "AI service unavailable - GOOGLE_API_KEY environment variable not set in Vercel",
+                    "help": "Please set GOOGLE_API_KEY in Vercel project settings > Environment Variables"
+                }
+                self.wfile.write(json.dumps(response_data).encode())
+                return
+                
+            try:
+                scenario = request_data.get("scenario", {})
+                selected_misconception = request_data.get("selectedMisconception", 0)
+                intervention = request_data.get("intervention", "")
+                chat_history = request_data.get("chatHistory", [])
+                selected_strategy = request_data.get("selectedStrategy")
+                language = request_data.get("language", "english")
+                
+                response_data = gemini_service.evaluate_session(scenario, selected_misconception, intervention, chat_history, selected_strategy, language)
+            except Exception as e:
+                import traceback
+                error_trace = traceback.format_exc()
+                print(f"❌ Session evaluation error: {error_trace}")
+                response_data = {
+                    "error": f"Session evaluation failed: {str(e)}",
+                    "details": error_trace if os.getenv("DEBUG") else None
+                }
         else:
             response_data = {
                 "error": "API endpoint not found",
