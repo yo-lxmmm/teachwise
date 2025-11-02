@@ -87,25 +87,44 @@ class GeminiService:
         """Initialize the Gemini model only when needed"""
         try:
             api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+            print(f"🔍 DEBUG: Checking API key - present: {bool(api_key)}, length: {len(api_key) if api_key else 0}")
+            
             if api_key:
+                # Ensure genai is configured with the API key
+                try:
+                    genai.configure(api_key=api_key)
+                    print("✅ DEBUG: genai.configure() called successfully")
+                except Exception as config_error:
+                    print(f"❌ DEBUG: Failed to configure genai: {config_error}")
+                    raise
+                
                 # Use gemini-2.5-pro as the primary model with fallbacks
                 model_names = ['gemini-2.5-pro', 'gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro']
                 
+                last_error = None
                 for model_name in model_names:
                     try:
+                        print(f"🔍 DEBUG: Attempting to initialize {model_name}...")
                         self.model = genai.GenerativeModel(model_name)
+                        # Test the model is actually working
                         print(f"🚀 Gemini API model initialized successfully with {model_name}")
                         return
                     except Exception as model_error:
-                        print(f"⚠️  Failed to initialize {model_name}: {model_error}")
+                        print(f"⚠️  Failed to initialize {model_name}: {str(model_error)}")
+                        last_error = model_error
                         continue
                 
-                # If all models fail, raise error
-                raise Exception("Could not initialize any Gemini model")
+                # If all models fail, log detailed error
+                error_msg = f"Could not initialize any Gemini model. Last error: {last_error}"
+                print(f"❌ DEBUG: {error_msg}")
+                raise Exception(error_msg)
             else:
                 print("⚠️  Gemini API not initialized - no API key found")
+                print(f"🔍 DEBUG: GOOGLE_API_KEY={os.getenv('GOOGLE_API_KEY')}, GEMINI_API_KEY={os.getenv('GEMINI_API_KEY')}")
         except Exception as e:
             print(f"❌ Error initializing Gemini API: {e}")
+            import traceback
+            print(f"❌ DEBUG: Full traceback:\n{traceback.format_exc()}")
             self.model = None
     
     def _check_api_available(self):

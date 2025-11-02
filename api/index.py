@@ -12,12 +12,20 @@ parent_dir = current_dir.parent
 sys.path.insert(0, str(parent_dir))
 
 # Import your existing TeachWise functionality
+# Note: Environment variables should be available at import time in Vercel
+import os
+print(f"🔍 DEBUG: Environment check at import - GOOGLE_API_KEY present: {bool(os.getenv('GOOGLE_API_KEY'))}")
+print(f"🔍 DEBUG: Environment check at import - GEMINI_API_KEY present: {bool(os.getenv('GEMINI_API_KEY'))}")
+
 try:
     from simple_app import gemini_service
     print("✅ Successfully imported TeachWise gemini_service")
+    print(f"🔍 DEBUG: gemini_service.model status: {gemini_service.model is not None}")
     TEACHWISE_AVAILABLE = True
 except ImportError as e:
     print(f"❌ Failed to import TeachWise functionality: {e}")
+    import traceback
+    print(f"❌ DEBUG: Full import traceback:\n{traceback.format_exc()}")
     TEACHWISE_AVAILABLE = False
 
 class handler(BaseHTTPRequestHandler):
@@ -51,21 +59,33 @@ class handler(BaseHTTPRequestHandler):
                 # Check API key availability
                 api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
                 api_key_status = "available" if api_key else "missing"
+                api_key_preview = api_key[:10] + "..." if api_key and len(api_key) > 10 else "not_set"
                 
                 # Check if gemini service is available and initialized
                 ai_ready = False
+                model_info = None
                 if TEACHWISE_AVAILABLE:
                     try:
                         ai_ready = gemini_service.model is not None
-                    except:
+                        if gemini_service.model:
+                            # Try to get model info
+                            model_info = str(type(gemini_service.model))
+                    except Exception as e:
                         ai_ready = False
+                        model_info = f"Error checking model: {str(e)}"
                 
                 response_data = {
                     "status": "healthy",
                     "version": "2.0", 
                     "api_key": api_key_status,
+                    "api_key_preview": api_key_preview,
                     "ai_ready": ai_ready,
-                    "teachwise_available": TEACHWISE_AVAILABLE
+                    "teachwise_available": TEACHWISE_AVAILABLE,
+                    "model_info": model_info,
+                    "environment_vars": {
+                        "GOOGLE_API_KEY_set": bool(os.getenv("GOOGLE_API_KEY")),
+                        "GEMINI_API_KEY_set": bool(os.getenv("GEMINI_API_KEY"))
+                    }
                 }
             else:
                 response_data = {"message": "TeachWise API", "path": path}
