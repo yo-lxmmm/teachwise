@@ -88,8 +88,22 @@ class GeminiService:
         try:
             api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
             if api_key:
-                self.model = genai.GenerativeModel('gemini-1.5-pro')
-                print("🚀 Gemini API model initialized successfully")
+                # Try different model names in order of preference
+                # gemini-1.5-flash is faster and more widely available
+                # gemini-1.5-pro may not be available in all regions/API versions
+                model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+                
+                for model_name in model_names:
+                    try:
+                        self.model = genai.GenerativeModel(model_name)
+                        print(f"🚀 Gemini API model initialized successfully with {model_name}")
+                        return
+                    except Exception as model_error:
+                        print(f"⚠️  Failed to initialize {model_name}: {model_error}")
+                        continue
+                
+                # If all models fail, raise error
+                raise Exception("Could not initialize any Gemini model")
             else:
                 print("⚠️  Gemini API not initialized - no API key found")
         except Exception as e:
