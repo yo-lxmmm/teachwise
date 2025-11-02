@@ -96,13 +96,13 @@ git push origin main
 
 ## 📝 Environment Variable Format
 
-Your `GOOGLE_API_KEY` should look like:
-```
-AIzaSyAbCdEfGhIjKlMnOpQrStUvWxYz1234567
-```
+Your `GOOGLE_API_KEY` should:
+- Start with `AIza` (all Gemini API keys start with this prefix)
+- Be 39 characters long
+- Be obtained from [Google AI Studio](https://aistudio.google.com/app/apikey)
 
 **Important:** 
 - Never commit API keys to git
 - Always use environment variables
-- Keys starting with `AIza` are Gemini API keys
+- If you accidentally commit an API key, rotate it immediately in Google AI Studio
 
